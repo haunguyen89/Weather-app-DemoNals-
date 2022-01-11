@@ -1,9 +1,12 @@
 package com.solution.nalsweather.view
 
 import android.content.Context
+import android.opengl.Visibility
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -22,91 +25,35 @@ import com.solution.nalsweather.view.calendar.CalendarUtils.Companion.daysInWeek
 import com.solution.nalsweather.viewmodel.MainViewModel
 import com.solution.nalsweather.viewmodel.MyViewModelFactory
 import com.velmurugan.mvvmwithkotlincoroutinesandretrofit.WeatherAdapter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.ArrayList
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.math.roundToInt
 
+@RequiresApi(Build.VERSION_CODES.O)
 class MainActivity : AppCompatActivity() {
     lateinit var viewModel: MainViewModel
     private val adapter = WeatherAdapter()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Companion.binding = ActivityMainBinding.inflate(layoutInflater)
         context = this.applicationContext
         setContentView(Companion.binding.root)
-
-        setWeekView()
-//        binding.recyclerview.adapter = adapter
-//        viewModel = ViewModelProvider(this, MyViewModelFactory(mainRepository)).get(MainViewModel::class.java)
-
-
-//        viewModel.weatherList.observe(this, {
-//            adapter.setWeathers(it)
-//        })
-//
-//        viewModel.errorMessage.observe(this, {
-//            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
-//        })
-//
-//        viewModel.loading.observe(this, Observer {
-//            if (it) {get result from repository retrofit
-//                Companion.binding.progressDialog.visibility = View.VISIBLE
-//            } else {
-//                Companion.binding.progressDialog.visibility = View.GONE
-//            }
-//        })
-//
-//        viewModel.getAllWeathers()
-
+        val today = LocalDate.now()
+        getValueDisplayUI(today)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     object onItemListener : CalendarAdapter.OnItemListener {
 
         override fun onItemClick(position: Int, date: LocalDate?) {
-            val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
-            val formatterMonth = DateTimeFormatter.ofPattern("MM")
-            val formatterDay = DateTimeFormatter.ofPattern("dd")
-            Log.d(
-                "",
-                date!!.format(formatter) + "_" + date!!.year.toString() + date!!.format(
-                    formatterMonth
-                ) + date!!.format(formatterDay)
-            )
-
-            val retrofitService = WeatherApi.getInstance()
-            GlobalScope.launch {
-                val mainRepository = WeatherRepository(retrofitService).getAllWeathers(
-                    location = API_LOCATION,
-                    year = date!!.year.toString(),
-                    month = date!!.format(formatterMonth),
-                    day = date!!.format(formatterDay)
-                )
-                if (mainRepository.body()?.size ?: 0 > 0) {
-                    var i: Int = 0
-                    Log.d("Tag size", "Size" + mainRepository.body()?.size)
-                    for (index in mainRepository.body()!!) {
-                        Log.d("Tag size",
-                            "haha day roi_" + i + "_" + mainRepository.body()
-                                ?.get(i)?.weather_state_abbr
-                        )
-                        var count: Int = 0;
-                        count = weatherStateAbbr[mainRepository.body()?.get(i)?.weather_state_abbr]!!
-                        weatherStateAbbr[mainRepository.body()?.get(i)?.weather_state_abbr] = count + 1;
-                        i++;
-                    }
-                }
-            }
-
-
-            CalendarUtils.selectedDate = date!!
-            setWeekView()
+            getValueDisplayUI(date)
         }
-
     }
 
     companion object {
@@ -120,7 +67,103 @@ class MainActivity : AppCompatActivity() {
 
         lateinit var context: Context
         lateinit var binding: ActivityMainBinding
-        val weatherStateAbbr:HashMap<String, Int> = HashMap<String, Int>()
+        val weatherStateAbbr: HashMap<String, Int> = HashMap<String, Int>()
+        private val humidityHandler = Handler()
+        private val predictabilityHandler = Handler()
+        private var humidity = 0
+        private var predictability = 0
+        private var thetemp = 0F
+        private var displayDate = ""
+        fun updateUI() {
+            var i = 0
+            binding.theTemp.text = thetemp.roundToInt().toString() + "\u2103"
+            binding.dayWeatherState.text = displayDate
+            Thread(Runnable {
+                // this loop will run until the value of 0 becomes humidity
+                while (i < humidity) {
+                    i += 1
+                    // Update the progress bar and display the current value
+                    humidityHandler.post(Runnable {
+                        binding.progressHumidity.progress = i
+                        // setting current progress to the textview
+                        binding.humidity.text = i.toString() + "%"
+                    })
+                    try {
+                        Thread.sleep(20)
+                    } catch (e: InterruptedException) {
+                        e.printStackTrace()
+                    }
+                }
+            }).start()
+
+            Thread(Runnable {
+                // this loop will run until the value of 0 becomes predictability
+                while (i < predictability) {
+                    i += 1
+                    // Update the progress bar and display the current value
+                    predictabilityHandler.post(Runnable {
+                        binding.progressPredictability.progress = i
+                        // setting current progress to the textview
+                        binding.predictability.text = i.toString() + "%"
+                    })
+                    try {
+                        Thread.sleep(20)
+                    } catch (e: InterruptedException) {
+                        e.printStackTrace()
+                    }
+                }
+            }).start()
+        }
+        @RequiresApi(Build.VERSION_CODES.O)
+        fun getValueDisplayUI(date: LocalDate?) {
+            val formatter = DateTimeFormatter.ofPattern("EEE MMM dd, yyyy").withLocale(Locale("en", "NZ"))
+            val formatterMonth = DateTimeFormatter.ofPattern("MM")
+            val formatterDay = DateTimeFormatter.ofPattern("dd")
+            displayDate = date!!.format(formatter)
+            humidity = 0
+            predictability = 0
+            val retrofitService = WeatherApi.getInstance()
+            GlobalScope.launch {
+                val handlerVisiblePro = Handler(Looper.getMainLooper())
+                handlerVisiblePro.post({
+                    binding.progressDialog.visibility = View.VISIBLE
+                })
+                val mainRepository = WeatherRepository(retrofitService).getAllWeathers(
+                    location = API_LOCATION,
+                    year = date!!.year.toString(),
+                    month = date!!.format(formatterMonth),
+                    day = date!!.format(formatterDay)
+                )
+                var size = mainRepository.body()?.size
+                if (size ?: 0 > 0) {
+                    var i = 0
+                    var humidityTemp = 0
+                    var predictabilityTemp = 0
+                    var thetempTemp = 0F
+                    for (index in mainRepository.body()!!) {
+                        humidityTemp += index.humidity.toInt()
+                        predictabilityTemp += index.predictability.toInt()
+                        thetempTemp += index.the_temp.toFloat()
+                        i++;
+                    }
+                    thetemp = thetempTemp / size!!
+                    humidity = humidityTemp / size!!
+                    predictability = predictabilityTemp / size!!
+
+                }
+                val handlerInvisiblePro = Handler(Looper.getMainLooper())
+                handlerInvisiblePro.post({
+                    binding.progressDialog.visibility = View.INVISIBLE
+                })
+                val handler = Handler(Looper.getMainLooper())
+                handler.post({
+                    updateUI()
+                })
+
+            }
+            CalendarUtils.selectedDate = date!!
+            setWeekView()
+        }
     }
 }
 

@@ -28,8 +28,8 @@
         android:id="@+id/the_temp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="37 C"
+        android:layout_marginTop="15dp"
+        android:text=""
         android:textColor="#2c4981"
         android:textSize="100sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -41,8 +41,8 @@
         android:id="@+id/weather_state_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Light Cloud"
+        android:layout_marginTop="15dp"
+        android:text=""
         android:textColor="#54afee"
         android:textSize="40sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -53,8 +53,8 @@
         android:id="@+id/day_weather_state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Mon, Aug 9, 2021"
+        android:layout_marginTop="15dp"
+        android:text=""
         android:textColor="#212121"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -65,7 +65,7 @@
     <LinearLayout
         android:id="@+id/lnHumidity"
         android:layout_width="140dp"
-        android:layout_height="190dp"
+        android:layout_height="200dp"
         android:layout_marginTop="20dp"
         android:background="@drawable/bg_humidity"
         android:gravity="center_horizontal"
@@ -80,16 +80,17 @@
         app:layout_constraintVertical_bias="0.0">
 
         <ProgressBar
-            android:layout_width="70dp"
-            android:layout_height="70dp" />
+            android:id="@+id/progress_humidity"
+            style="@style/CircularDeterminateProgressBar"
+            android:layout_width="100dp"
+            android:layout_height="100dp" />
 
         <TextView
             android:id="@+id/humidity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="45%"
-            android:layout_marginTop="10dp"
-
+            android:layout_marginTop="5dp"
+            android:text=""
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -97,8 +98,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="Humidity"
-            android:layout_marginTop="10dp"
             android:textColor="@color/white"
             android:textSize="14sp" />
 
@@ -107,7 +108,7 @@
     <LinearLayout
         android:id="@+id/lnPredictability"
         android:layout_width="140dp"
-        android:layout_height="190dp"
+        android:layout_height="200dp"
         android:layout_marginTop="20dp"
         android:background="@drawable/bg_predictability"
         android:gravity="center_horizontal"
@@ -121,15 +122,17 @@
         app:layout_constraintVertical_bias="0.0">
 
         <ProgressBar
-            android:layout_width="70dp"
-            android:layout_height="70dp" />
+            android:id="@+id/progress_predictability"
+            style="@style/CircularDeterminateProgressBar"
+            android:layout_width="100dp"
+            android:layout_height="100dp" />
 
         <TextView
             android:id="@+id/predictability"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="45%"
+            android:layout_marginTop="5dp"
+            android:text=""
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -137,7 +140,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:text="Predictability"
             android:textColor="@color/white"
             android:textSize="14sp" />
