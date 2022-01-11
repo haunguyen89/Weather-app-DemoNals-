@@ -18,7 +18,7 @@ class MainViewModel constructor(private val weatherRepository: WeatherRepository
 
     fun getAllWeathers() {
         job = CoroutineScope(Dispatchers.IO + exceptionHandler).launch {
-            val response = weatherRepository.getAllWeathers()
+            val response = weatherRepository.getAllWeathers("1252431", "", "", "")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     weatherList.postValue(response.body())
