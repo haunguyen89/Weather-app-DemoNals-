@@ -11,21 +11,6 @@ import java.util.*
 @RequiresApi(Build.VERSION_CODES.O)
 class CalendarUtils {
 
-    fun formattedDate(date: LocalDate): String? {
-        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
-        return date.format(formatter)
-    }
-
-    fun formattedTime(time: LocalTime): String? {
-        val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a")
-        return time.format(formatter)
-    }
-
-    fun monthYearFromDate(date: LocalDate): String? {
-        val formatter = DateTimeFormatter.ofPattern("MM")
-        return date.format(formatter)
-    }
-
     companion object {
         var selectedDate: LocalDate = LocalDate.now()
         fun daysInWeekArray(
@@ -40,12 +25,16 @@ class CalendarUtils {
             return days
         }
 
+        fun formatDayOfToday(date: LocalDate): String? {
+            val formatter = DateTimeFormatter.ofPattern("EEE").withLocale(Locale("en", "NZ"))
+            return date.format(formatter)
+        }
+
         fun sundayForDate(current: LocalDate): LocalDate? {
             var current = current
             val oneWeekAgo = current.minusWeeks(1)
-            val formatter = DateTimeFormatter.ofPattern("EEE").withLocale(Locale("en", "NZ"))
             val today = LocalDate.now()
-            val day = today.format(formatter)
+            val day = formatDayOfToday(today)
             while (current.isAfter(oneWeekAgo)) {
                 when (day) {
                     "Mon" -> if (current.dayOfWeek == DayOfWeek.MONDAY) return current

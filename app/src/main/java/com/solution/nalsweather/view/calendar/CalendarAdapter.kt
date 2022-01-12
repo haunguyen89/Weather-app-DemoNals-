@@ -1,7 +1,9 @@
 package com.solution.nalsweather.view.calendar
 
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,6 +33,8 @@ internal class CalendarAdapter(
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: CalendarViewHolder, position: Int) {
         val date = days[position]
+        val today = LocalDate.now()
+        val formatterToday = DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale("en", "NZ"))
         if (date == null) {
             holder.dayOfMonth.setText("")
             holder.month.setText("")
@@ -39,8 +43,12 @@ internal class CalendarAdapter(
             holder.dayOfMonth.setText(date.dayOfMonth.toString())
             holder.month.setText(date.monthValue.toString())
             val formatter = DateTimeFormatter.ofPattern("EEE").withLocale(Locale("en", "NZ"))
-            holder.dayOfToday.setText(date.format(formatter).toString())
-            if (date == CalendarUtils.selectedDate) holder.parentView.setBackgroundColor(Color.LTGRAY)
+            if (today.format(formatterToday).toString().equals(date.toString())) {
+                holder.dayOfToday.setText("Today")
+            } else {
+                holder.dayOfToday.setText(date.format(formatter).toString())
+            }
+            if (date == CalendarUtils.selectedDate) holder.parentView.setBackgroundResource(R.drawable.bg_item_calendar)
         }
     }
 
