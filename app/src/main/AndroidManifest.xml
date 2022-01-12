@@ -14,6 +14,7 @@
         android:theme="@style/Theme.NalsWeather" >
         <activity
             android:name=".view.MainActivity"
+            android:theme="@style/Theme.NalsWeather.NoActionBar"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

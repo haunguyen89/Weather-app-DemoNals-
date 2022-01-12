@@ -1,6 +1,5 @@
 package com.solution.nalsweather.view
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -10,16 +9,17 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.motion.widget.OnSwipe
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.solution.nalsweather.R
 import com.solution.nalsweather.databinding.ActivityMainBinding
+import com.solution.nalsweather.local.DatabaseBuilder
+import com.solution.nalsweather.local.DatabaseHelperImpl
+import com.solution.nalsweather.model.WeatherEntity
 import com.solution.nalsweather.remote.WeatherApi
 import com.solution.nalsweather.repository.WeatherRepository
 import com.solution.nalsweather.utils.API_LOCATION
@@ -36,7 +36,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @RequiresApi(Build.VERSION_CODES.O)
-class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
+class MainActivity() : AppCompatActivity(), GestureDetector.OnGestureListener {
     lateinit var gestureDetector: GestureDetector
     var x2: Float = 0.0f
     var x1: Float = 0.0f
@@ -76,17 +76,23 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             1 -> {
                 x2 = event.x
                 y2 = event.y
-                Log.d("xxx2: ", x2.toString())
-                Log.d("yyy2: ", y2.toString())
                 val valueX: Float = x2 - x1
                 val valueY: Float = y2 - y1
                 if (abs(valueX) > SWIPE_MIN_DISTANCE) {
                     if (x2 > x1 && swipeWeek) {
+                        indexWeek++
                         previousWeekAction()
-                        swipeWeek = false
+                        if (indexWeek == 2) {
+                            swipeWeek = false
+                            indexWeek = 0
+                        }
                     } else {
+                        indexWeek++
                         nextWeekAction()
-                        swipeWeek = true
+                        if (indexWeek == 2) {
+                            swipeWeek = true
+                            indexWeek = 0
+                        }
                     }
                 }
             }
@@ -117,6 +123,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         val weatherStateAbbr: HashMap<String, Int> = HashMap<String, Int>()
         val weatherStateName: HashMap<String, String> = HashMap<String, String>()
         private var swipeWeek = false
+        private var indexWeek = 1
         private var weatherState = ""
         private val humidityHandler = Handler()
         private val predictabilityHandler = Handler()
@@ -124,7 +131,6 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         private var predictability = 0
         private var thetemp = 0F
         private var displayDate = ""
-
 
         fun setWeekView() {
             val days: ArrayList<LocalDate> = daysInWeekArray(CalendarUtils.selectedDate)
@@ -198,6 +204,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             humidity = 0
             predictability = 0
             val retrofitService = WeatherApi.getInstance()
+            var dbHelper = DatabaseHelperImpl(DatabaseBuilder.getInstance(context))
             GlobalScope.launch {
                 val handlerVisiblePro = Handler(Looper.getMainLooper())
                 handlerVisiblePro.post {
@@ -209,6 +216,26 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                     month = date!!.format(formatterMonth),
                     day = date!!.format(formatterDay)
                 )
+                var data = WeatherEntity(0, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "")
+                mainRepository.body()?.forEach {
+
+                    data.id_weather = it.id
+                    data.weather_state_name = it.weather_state_name
+                    data.weather_state_abbr = it.weather_state_abbr
+                    data.wind_direction_compass = it.wind_direction_compass
+                    data.created = it.created
+                    data.applicable_date = it.applicable_date
+                    data.min_temp = it.min_temp
+                    data.max_temp = it.max_temp
+                    data.the_temp = it.the_temp
+                    data.wind_speed = it.wind_speed
+                    data.air_pressure = it.air_pressure
+                    data.humidity = it.humidity
+                    data.visibility = it.visibility
+                    data.predictability = it.predictability
+
+                    dbHelper.insertItem(data)
+                }
                 var size = mainRepository.body()?.size
                 if (size ?: 0 > 0) {
                     var i = 0
@@ -247,7 +274,6 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
                 handler.post {
                     updateUI()
                 }
-
             }
             CalendarUtils.selectedDate = date!!
             setWeekView()

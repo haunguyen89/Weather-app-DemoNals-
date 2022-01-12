@@ -28,7 +28,6 @@ class MainViewModel constructor(private val weatherRepository: WeatherRepository
                 }
             }
         }
-
     }
 
     private fun onError(message: String) {

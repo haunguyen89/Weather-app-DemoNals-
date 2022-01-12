@@ -7,18 +7,19 @@ import androidx.room.PrimaryKey
 data class WeatherEntity(
     @PrimaryKey(autoGenerate = true)
     var id : Int? = null,
-    val weather_state_name: String?,
-    val weather_state_abbr: String?,
-    val wind_direction_compass: String?,
-    val created: String?,
-    val applicable_date: String?,
-    val min_temp: String?,
-    val max_temp: String?,
-    val the_temp: String?,
-    val wind_speed: String?,
-    val wind_direction: String?,
-    val air_pressure: String?,
-    val humidity: String?,
-    val visibility: String?,
-    val predictability: String?
+    var id_weather : String?,
+    var weather_state_name: String?,
+    var weather_state_abbr: String?,
+    var wind_direction_compass: String?,
+    var created: String?,
+    var applicable_date: String?,
+    var min_temp: String?,
+    var max_temp: String?,
+    var the_temp: String?,
+    var wind_speed: String?,
+    var wind_direction: String?,
+    var air_pressure: String?,
+    var humidity: String?,
+    var visibility: String?,
+    var predictability: String?
 )
